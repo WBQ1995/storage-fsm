@@ -14,7 +14,7 @@ const minRetryTime = 1 * time.Minute
 func failedCooldown(ctx statemachine.Context, sector SectorInfo) error {
 	// TODO: Exponential backoff when we see consecutive failures
 
-	retryStart := time.Unix(int64(sector.Log[len(sector.Log)-1].Timestamp), 0).Add(minRetryTime)
+	retryStart := time.Unix(int64(sector.Log[len(sector.Log)-1].Timestamp), 0).Add(5 * minRetryTime)
 	if len(sector.Log) > 0 && !time.Now().After(retryStart) {
 		log.Infof("%s(%d), waiting %s before retrying", sector.State, sector.SectorNumber, time.Until(retryStart))
 		select {
@@ -56,9 +56,11 @@ func (m *Sealing) handleSealPrecommit2Failed(ctx statemachine.Context, sector Se
 		return err
 	}
 
+	/*
 	if sector.PreCommit2Fails > 1 {
 		return ctx.Send(SectorRetrySealPreCommit1{})
 	}
+	*/
 
 	return ctx.Send(SectorRetrySealPreCommit2{})
 }
